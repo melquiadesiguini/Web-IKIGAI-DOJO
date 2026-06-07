@@ -19,7 +19,13 @@ body {
     line-height: 1.6;
     color: var(--color-primary);
     background: var(--color-white);
-    scroll-behavior: smooth; /* Desplazamiento suave al hacer clic en enlaces */
+    scroll-behavior: smooth; /* Desplazamiento suave al hacer clic en enlaces */  
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+main{
+    flex: 1;
 }
 
 .container {
@@ -134,6 +140,7 @@ nav a {
 }
 
 /* -------------------- SECCIÓN HERO -------------------- */
+
 .hero {
     position: relative;
     background: url('../assets/images/Home.png') no-repeat center center/cover; /* Reemplaza con una imagen grande y de alta calidad */
@@ -253,11 +260,11 @@ nav a {
 
 /* Redes Sociales */
 .social-links {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .social-links a {
-    font-size: 2em;
+    font-size: 1rem;
     margin-right: 15px;
     color: var(--color-light);
     transition: color 0.9s ease;
@@ -271,15 +278,17 @@ nav a {
 footer {
     background: var(--color-primary);
     color: var(--color-light);
-    padding: 30px 0;
+    padding: 10px 0;
     text-align: center;
     font-size: 0.9em;
 }
 
 footer p {
-    margin: 5px 0;
+    margin: 0;
 }
-
+footer h3 {
+    margin: 0;
+}
 footer .container{
     display: flex;
     flex-direction: column;
@@ -352,6 +361,12 @@ p{
     flex-wrap: wrap;
     justify-content: space-around;
 }
+
+
+
+
+
+
 /* -------------------- RESPONSIVE (Móviles) -------------------- */
 @media (max-width: 768px) {
     .header-content {
@@ -414,7 +429,9 @@ p{
     color: var(--color-white);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
-
+main p{
+    text-align: center;
+}
 .gallery-hero-overlay {
     position: absolute;
     top: 0;

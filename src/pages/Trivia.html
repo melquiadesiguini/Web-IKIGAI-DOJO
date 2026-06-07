@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="../style/Trivia.css">
+<title>Trivia Dojo | Ikigai Dojo</title>
+</head>
+<body>
+    <header>
+        <div class="container-header header-content">
+            <div class="brand">
+                <a href="../../index.html"><img src="../assets/images/Logo Ikigai Dojo.png" alt="Logo Ikigai Dojo" class="logo-img "></a>
+                <a href="../../index.html"><h1 class="logo">IKIGAI DOJO</h1></a>
+            </div>
+            <nav id="navbar">
+                <a href="../../index.html">Inicio</a>
+                <a href="../pages/Galeria.html">Galería</a>
+                <a href="../pages/Nosotros.html">Nosotros</a>
+                <a href="../pages/Contacto.html">Contacto</a>
+                <a href="../pages/Eventos.html">Eventos</a>
+                <a href="../pages/Tienda.html">Tienda</a>
+                <a href="../pages/Trivia.html">Trivia</a>
+                <a href="#contacto" class="cta-button">Inscríbete Ahora</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="bg-texture"></div>
+    <div class="kanji-bg" id="kanjiBg">道</div>
+    <div class="feedback-flash" id="feedbackFlash"></div>
+
+    <div class="container">
+
+    <div class="dojo-header">
+    <div class="dojo-logo-text">Ikigai Dojo</div>
+    <div class="dojo-title">TRIVIA <span>DOJO</span></div>
+    <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-dot"></div>
+        <div class="divider-line"></div>
+    </div>
+    </div>
+
+    <!-- PANTALLA INTRO -->
+    <div class="screen active" id="screenIntro">
+    <div class="intro-card">
+        <div class="intro-kanji">空手</div>
+        <div class="intro-subtitle">Poné a prueba tu conocimiento</div>
+        <p class="intro-desc">
+        Respondé correctamente y ascendé en el sistema de cinturones.<br>
+        ¿Llegarás al cinturón negro?
+        </p>
+        <div class="belt-preview">
+        <div class="belt-chip" style="background: var(--belt-white); border: 1px solid #444;"></div>
+        <div class="belt-chip" style="background: var(--belt-yellow);"></div>
+        <div class="belt-chip" style="background: var(--belt-orange);"></div>
+        <div class="belt-chip" style="background: var(--belt-green);"></div>
+        <div class="belt-chip" style="background: var(--belt-blue);"></div>
+        <div class="belt-chip" style="background: var(--belt-brown);"></div>
+        <div class="belt-chip" style="background: var(--belt-black); border: 1px solid #555;"></div>
+        </div>
+        <div class="mode-select">
+        <button class="mode-btn selected" id="modeEasy" onclick="selectMode('easy')">
+            <span class="mode-icon">🥋</span>
+            PRINCIPIANTE
+            <span class="mode-label">Filosofía e historia básica</span>
+        </button>
+        <button class="mode-btn" id="modeHard" onclick="selectMode('hard')">
+            <span class="mode-icon">⚔️</span>
+            AVANZADO
+            <span class="mode-label">Técnicas y competición</span>
+        </button>
+        </div>
+        <button class="btn-primary" onclick="startGame()">COMENZAR EL DESAFÍO</button>
+    </div>
+    </div>
+
+    <!-- PANTALLA PREGUNTA -->
+    <div class="screen" id="screenQuestion">
+    <div class="progress-bar-wrap">
+        <div class="progress-meta">
+        <span class="q-num" id="qNum">Pregunta 1 / 10</span>
+        <span id="qCategory">—</span>
+        </div>
+        <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+    </div>
+
+    <div class="belt-indicator" id="beltIndicator">
+        <div class="belt-bar" id="beltBar"></div>
+        <div class="belt-name" id="beltName"><strong>Cinturón Blanco</strong></div>
+        <div class="score-badge" id="scoreBadge">0 pts</div>
+    </div>
+
+    <div class="question-card">
+        <div class="question-category" id="questionCategory"></div>
+        <div class="question-text" id="questionText"></div>
+    </div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+
+    <div class="explanation-box" id="explanationBox"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">SIGUIENTE PREGUNTA →</button>
+    </div>
+
+    <!-- PANTALLA RESULTADO -->
+    <div class="screen" id="screenResult">
+    <div class="result-card" id="resultCard">
+        <div class="result-belt-display" id="resultBeltDisplay">🥋</div>
+        <div class="result-rank-label">TU RANGO FINAL</div>
+        <div class="result-belt-name" id="resultBeltName">Cinturón Blanco</div>
+        <div class="stars-row" id="starsRow"></div>
+        <div class="result-score" id="resultScore">0</div>
+        <div class="result-score-label" id="resultScoreLabel">puntos de 200</div>
+        <div class="result-message" id="resultMessage"></div>
+        <div class="cta-box" id="ctaBox">
+        <p id="ctaText"></p>
+        <a id="ctaWhatsapp" class="btn-whatsapp" href="#" target="_blank">🥊 QUIERO UNA CLASE GRATIS</a>
+        </div>
+        <button class="btn-retry" onclick="retryGame()">↺ JUGAR DE NUEVO</button>
+    </div>
+    </div>
+
+    </div>
+    <footer>
+            <h3>¡Síguenos!</h3>
+            <div class="social-links">
+                <a href="https://www.instagram.com/ikigaidojo.ka.ko/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61561605354382" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.tiktok.com/@ikigaidojo.ka.ko?is_from_webapp=1&sender_device=pc" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://youtube.com/@ikigaidojo-ka-ko?si=EB4X8dxEKwLlcdgb" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+
+            <div class="container-footer">
+                <p>&copy; 2026 IKIGAI DOJO. Todos los derechos reservados.</p>
+                <p>Hecho con <i class="fas fa-code"></i> y pasión marcial.</p>
+            </div>
+        </footer>
+    <script>
+    // ─────────────────────────────────────────────
+    // PREGUNTAS — agregar, quitar o editar
+    // ─────────────────────────────────────────────
+    const QUESTIONS = {
+        easy: [
+            {
+            text: "¿Qué significa la palabra 'Karate' en japonés?",
+            category: "Historia y Filosofía",
+            options: ["Mano dura", "Mano vacía", "Arte marcial", "Camino del guerrero"],
+            correct: 1,
+            explanation: "'Karate' (空手) se escribe con los kanji de 'vacío' (空, kara) y 'mano' (手, te). Representa el arte de luchar sin armas, usando solo el cuerpo como herramienta."
+            },
+            {
+            text: "¿Qué significa 'Dojo' en la cultura de las artes marciales?",
+            category: "Cultura Marcial",
+            options: ["Lugar de combate", "Escuela de guerreros", "Lugar para practicar el camino", "Casa del maestro"],
+            correct: 2,
+            explanation: "Dojo (道場) significa literalmente 'lugar del camino'. Es el espacio sagrado donde se practica, no solo físicamente sino también como camino de vida y crecimiento personal."
+            },
+            {
+            text: "¿Cuál es el principio filosófico que da nombre a este dojo?",
+            category: "Filosofía Japonesa",
+            options: ["Bushido", "Ikigai", "Wabi-sabi", "Mono no aware"],
+            correct: 1,
+            explanation: "Ikigai (生き甲斐) es un concepto japonés que significa 'razón de vivir'. En el dojo, representa encontrar propósito a través de las artes marciales."
+            },
+            {
+            text: "¿Cómo se llama la reverencia de respeto que se hace al entrar al dojo?",
+            category: "Etiqueta Marcial",
+            options: ["Kiai", "Rei", "Osu", "Mokuso"],
+            correct: 1,
+            explanation: "Rei (礼) es la reverencia de respeto. Es fundamental como símbolo de humildad, gratitud y reconocimiento hacia el lugar, el maestro y los compañeros."
+            },
+            {
+            text: "¿Donde tuvo su el Karate moderno?",
+            category: "Historia",
+            options: ["China", "Corea", "Japón", "Okinawa primero, luego Japón"],
+            correct: 3,
+            explanation: "El Karate nació en Okinawa, donde se fusionaron artes locales con influencias chinas. Luego Gichin Funakoshi lo llevó al Japón continental en 1922."
+            },
+            {
+            text: "¿Qué representa el cinturón negro en las artes marciales?",
+            category: "Sistema de Grados",
+            options: ["Maestría absoluta y el fin del aprendizaje", "El comienzo de un nuevo nivel de aprendizaje", "Haber derrotado a todos los rivales", "Llevar 10 años practicando"],
+            correct: 1,
+            explanation: "El cinturón negro no representa el final, sino el inicio del verdadero aprendizaje. Shodan significa 'el que comienza'. El maestro siempre sigue siendo alumno."
+            },
+            {
+            text: "¿Qué es un 'Kata' en Karate?",
+            category: "Técnica",
+            options: ["Un combate libre entre dos personas", "Una secuencia codificada de técnicas practicadas en solitario", "El uniforme de entrenamiento", "Un grado avanzado del cinturón"],
+            correct: 1,
+            explanation: "El Kata (形) es una secuencia de técnicas predeterminadas que se practica solo. Es la enciclopedia viva del Karate, transmitida de generación en generación."
+            },
+            {
+            text: "¿Qué significa 'Sensei' en japonés?",
+            category: "Cultura Marcial",
+            options: ["Guerrero supremo", "El que nació antes / el que fue antes", "Maestro de artes marciales", "Protector del dojo"],
+            correct: 1,
+            explanation: "Sensei (先生) significa 'el que fue antes en el camino'. Implica experiencia y guía. Todo maestro fue primero alumno."
+            },
+            {
+            text: "¿Cuál es el grito que se usa en Karate para focalizar energía?",
+            category: "Técnica",
+            options: ["Kiai", "Rei", "Osu", "Hajime"],
+            correct: 0,
+            explanation: "El Kiai (気合) es la vocalización explosiva para concentrar la energía (ki) en el momento del golpe. También controla la respiración e intimidar al adversario."
+            },
+            {
+            text: "¿Qué significa el valor de 'Osu' que se usa en el dojo?",
+            category: "Cultura Marcial",
+            options: ["Ataque", "Perseverancia, respeto y gratitud", "Victoria", "Saludos formales únicamente"],
+            correct: 1,
+            explanation: "Osu (押忍) condensa valores fundamentales: perseverancia, respeto y gratitud. Es mucho más que un saludo, es una declaración de actitud ante la vida."
+            }
+        ],
+        hard: [
+            {
+            text: "¿Qué estilo de Karate fundó Kenwa Mabuni?",
+            category: "Historia Avanzada",
+            options: ["Goju-ryu", "Shotokan", "Uechi-ryu", "Shito-ryu"],
+            correct: 3,
+            explanation: "Kenwa Mabuni (1889-1952) fundó el Shito-ryu, uno de los cuatro estilos principales del Karate. Combinó las enseñanzas de dos maestros de Okinawa: Anko Itosu (línea Shuri-te) y Kanryo Higaonna (línea Naha-te). El nombre 'Shito' surge de los kanji de ambos maestros."
+            },
+            {
+            text: "En competición de Kata, ¿cuántos jueces califican la ejecución?",
+            category: "Competición",
+            options: ["3 jueces", "5 jueces", "7 jueces", "4 jueces"],
+            correct: 1,
+            explanation: "5 jueces evalúan el Kata. Se descarta el puntaje más alto y el más bajo, y se promedian los 3 restantes."
+            },
+            {
+            text: "¿Qué es el 'Kobudo' que se practica en Ikigai Dojo?",
+            category: "Especialidad del Dojo",
+            options: ["Karate de contacto completo", "Arte marcial con armas tradicionales de Okinawa", "Defensa personal moderna", "Karate para niños"],
+            correct: 1,
+            explanation: "El Kobudo (古武道) es el arte de armas tradicionales de Okinawa: bo, nunchaku, sai, kama. Originalmente eran herramientas agrícolas adaptadas para defensa."
+            },
+            {
+            text: "¿Cuál es la diferencia entre Kumite Jyu y Kumite Kihon?",
+            category: "Técnica Avanzada",
+            options: ["Jyu es con protecciones, Kihon sin ellas", "Jyu es combate libre, Kihon es combate pre-acordado", "Jyu es para avanzados únicamente", "No hay diferencia real"],
+            correct: 1,
+            explanation: "Kihon Kumite usa técnicas pre-acordadas para desarrollar distancia y timing. Jyu Kumite es combate libre donde ambos atacan y defienden con libertad táctica."
+            },
+            {
+            text: "¿Qué kata es el primero que aprende un principiante de Shito-Ryu?",
+            category: "Kata",
+            options: ["Passai Dai", "Geki Sai Shodan", "Shiho Tsuki Ippon", "Piñan Shodan"],
+            correct: 3,
+            explanation: "Piñan Shodan (平安初段) es el primer kata del sistema Piñanes, creado por Anko Itosu. Piñan significa 'mente en paz'."
+            },
+            {
+            text: "¿En qué año el Karate fue incluido por primera vez en los Juegos Olímpicos?",
+            category: "Competición Internacional",
+            options: ["2016 en Río", "2020/2021 en Tokio", "2024 en París", "Aún no fue incluido"],
+            correct: 1,
+            explanation: "El Karate debutó en Tokio 2020 (celebrados en 2021 por la pandemia). No fue incluido en París 2024."
+            },
+            {
+            text: "¿Qué significa la zona de puntaje 'Ippon'?",
+            category: "Reglamento",
+            options: ["Un punto por técnica simple", "Tres puntos por técnica al jodan o derribo seguido de técnica", "Descalificación inmediata", "Empate técnico"],
+            correct: 1,
+            explanation: "Ippon vale 1 punto. Se otorga por técnica al jodan, derribo seguido de técnica, o barrido que desequilibra y se remata."
+            },
+            {
+            text: "¿Cuál es el nombre del fundador del estilo Goju-Ryu?",
+            category: "Historia de Estilos",
+            options: ["Hironori Otsuka", "Chojun Miyagi", "Masutatsu Oyama", "Kenwa Mabuni"],
+            correct: 1,
+            explanation: "Chojun Miyagi fundó el Goju-ryu: 'estilo duro-suave'. Integra técnicas de fuerza (go) con técnicas circulares (ju). Inspiró al señor Miyagi de Karate Kid."
+            },
+            {
+            text: "¿Qué es el 'Zanshin' en el combate marcial?",
+            category: "Filosofía Avanzada",
+            options: ["La postura de guardia inicial", "Estado de alerta continua antes, durante y después del combate", "El grito de victoria", "La reverencia final del kata"],
+            correct: 1,
+            explanation: "Zanshin (残心) significa 'mente que permanece'. Es el estado de alerta continua que no desaparece después de ejecutar una técnica."
+            },
+            {
+            text: "¿Vale derribo en la categoría cadetes?",
+            category: "Reglamento",
+            options: ["SI", "NO", "Si, pero con control", "Depende el caso"],
+            correct: 1,
+            explanation: "A partir de la categoría JUVENIL vale realizar un derribo al oponente."
+            }
+        ]
+    };
+
+    // ─────────────────────────────────────────────
+    // CINTURONES — modificá colores, nombres y puntajes mínimos
+    // ─────────────────────────────────────────────
+    const BELTS = [
+        { name: "Cinturón Blanco",  color: "#d0cec9", emoji: "🤍", min: 0,   kanji: "白" },
+        { name: "Cinturón Amarillo",color: "#f0c030", emoji: "💛", min: 20,  kanji: "黄" },
+        { name: "Cinturón Naranja", color: "#e07020", emoji: "🧡", min: 40,  kanji: "橙" },
+        { name: "Cinturón Verde",   color: "#2e8b57", emoji: "💚", min: 60,  kanji: "緑" },
+        { name: "Cinturón Azul",    color: "#1a5fa8", emoji: "💙", min: 80,  kanji: "青" },
+        { name: "Cinturón Marrón",  color: "#7b4828", emoji: "🤎", min: 100, kanji: "茶" },
+        { name: "Cinturón Negro",   color: "#cccccc", emoji: "🖤", min: 140, kanji: "黒" },
+    ];
+
+    // ─────────────────────────────────────────────
+    // MENSAJES FINALES — uno por nivel de cinturón (índice 0 al 6)
+    // ─────────────────────────────────────────────
+    const RESULT_MESSAGES = {
+        0: "El camino comienza con un solo paso. No te desanimes: cada maestro fue una vez un principiante. ¡El tatami te espera!",
+        1: "Mostrás curiosidad por las artes marciales. Con práctica, podrías sorprenderte de hasta dónde llegás.",
+        2: "Buen comienzo. La práctica constante transforma el conocimiento teórico en habilidad real.",
+        3: "¡Muy bien! Tu conocimiento va tomando forma. Estás listo para dar un paso más en el tatami.",
+        4: "¡Excelente! Dominás bien los conceptos del Karate. Tu nivel demuestra dedicación y pasión.",
+        5: "¡Impresionante dominio! Sos de los que entienden la profundidad del Karate.",
+        6: "¡Cinturón Negro! Tu conocimiento es el de un practicante serio. ¡El camino nunca termina!"
+    };
+
+    // ─────────────────────────────────────────────
+    // CTAs FINALES — cambiá el número de WhatsApp aquí
+    // ─────────────────────────────────────────────
+    const WHATSAPP_NUMBER = "5491157462523"; // ← CAMBIÁ ESTE NÚMERO
+
+    const CTA_BY_BELT = {
+        0: { text: "¿Querés empezar tu camino? Tu primer entrenamiento puede ser hoy mismo.", label: "🥋 QUIERO UNA CLASE GRATIS" },
+        1: { text: "¿Querés empezar tu camino? Tu primer entrenamiento puede ser hoy mismo.", label: "🥋 QUIERO UNA CLASE GRATIS" },
+        2: { text: "Tenés buena base teórica. ¿Listo para vivir el Karate en el tatami?",    label: "🥋 QUIERO UNA CLASE GRATIS" },
+        3: { text: "Tenés buena base teórica. ¿Listo para vivir el Karate en el tatami?",    label: "🥋 QUIERO UNA CLASE GRATIS" },
+        4: { text: "Con este nivel, el tatami te va a resultar familiar. ¿Por qué no nos visitás?", label: "⚔️ QUIERO ENTRENAR EN EL DOJO" },
+        5: { text: "¡Este nivel es el de un practicante serio! Si no entrenás aún, ¿a qué esperás?", label: "⚔️ QUIERO ENTRENAR EN EL DOJO" },
+        6: { text: "¡Cinturón Negro de trivia! Tu conocimiento merece el tatami.", label: "⚔️ CONTACTAR AL SENSEI" }
+    };
+
+    // ─────────────────────────────────────────────
+    // LÓGICA — no necesitás tocar nada de acá abajo
+    // ─────────────────────────────────────────────
+    let currentMode = 'easy';
+    let questions = [], currentQ = 0, score = 0, answered = false;
+
+    function selectMode(mode) {
+        currentMode = mode;
+        document.getElementById('modeEasy').classList.toggle('selected', mode === 'easy');
+        document.getElementById('modeHard').classList.toggle('selected', mode === 'hard');
+    }
+
+    function getBelt(pts) {
+        let belt = BELTS[0];
+        for (let b of BELTS) { if (pts >= b.min) belt = b; }
+        return belt;
+    }
+
+    function getBeltIndex(pts) {
+        let idx = 0;
+        for (let i = 0; i < BELTS.length; i++) { if (pts >= BELTS[i].min) idx = i; }
+        return idx;
+    }
+
+    function startGame() {
+        const pool = [...QUESTIONS[currentMode]];
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        questions = pool.slice(0, 10);
+        currentQ = 0; score = 0; answered = false;
+        showScreen('screenQuestion');
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQ];
+        document.getElementById('qNum').textContent = `Pregunta ${currentQ + 1} / ${questions.length}`;
+        document.getElementById('progressFill').style.width = (currentQ / questions.length * 100) + '%';
+        document.getElementById('questionCategory').textContent = q.category;
+        document.getElementById('questionText').textContent = q.text;
+
+        const belt = getBelt(score);
+        document.getElementById('beltBar').style.background = belt.color;
+        document.getElementById('beltBar').style.boxShadow = `0 0 10px ${belt.color}`;
+        document.getElementById('beltIndicator').style.setProperty('--current-belt', belt.color);
+        document.getElementById('beltIndicator').style.borderLeftColor = belt.color;
+        document.getElementById('beltName').innerHTML = `<strong>${belt.name}</strong>`;
+        document.getElementById('scoreBadge').textContent = score + ' pts';
+        document.getElementById('kanjiBg').textContent = belt.kanji;
+
+        const grid = document.getElementById('optionsGrid');
+        grid.innerHTML = '';
+        ['A','B','C','D'].forEach((letter, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span class="option-letter">${letter}</span>${q.options[i]}`;
+            btn.onclick = () => selectAnswer(i, btn);
+            grid.appendChild(btn);
+        });
+
+        document.getElementById('explanationBox').classList.remove('visible');
+        document.getElementById('explanationBox').textContent = '';
+        document.getElementById('nextBtn').classList.remove('visible');
+        answered = false;
+    }
+
+    function selectAnswer(idx, btn) {
+        if (answered) return;
+        answered = true;
+        const q = questions[currentQ];
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        const flash = document.getElementById('feedbackFlash');
+        if (idx === q.correct) {
+            btn.classList.add('correct');
+            score += 20;
+            flash.textContent = '✓ CORRECTO +20 pts';
+            flash.className = 'feedback-flash correct-flash show';
+        } else {
+            btn.classList.add('wrong');
+            allBtns[q.correct].classList.add('correct');
+            flash.textContent = '✗ INCORRECTO';
+            flash.className = 'feedback-flash wrong-flash show';
+        }
+        setTimeout(() => flash.classList.remove('show'), 1500);
+
+        document.getElementById('explanationBox').textContent = q.explanation;
+        document.getElementById('explanationBox').classList.add('visible');
+        const nextBtn = document.getElementById('nextBtn');
+        nextBtn.classList.add('visible');
+        nextBtn.textContent = currentQ < questions.length - 1 ? 'SIGUIENTE PREGUNTA →' : 'VER MI RESULTADO →';
+        }
+
+        function nextQuestion() {
+        currentQ++;
+        currentQ >= questions.length ? showResult() : renderQuestion();
+    }
+
+    function showResult() {
+        showScreen('screenResult');
+        const beltIdx = getBeltIndex(score);
+        const belt = BELTS[beltIdx];
+        const maxScore = questions.length * 20;
+
+        const resultBelt = document.getElementById('resultBeltDisplay');
+        resultBelt.textContent = belt.emoji;
+        resultBelt.style.borderColor = belt.color;
+        resultBelt.style.boxShadow = `0 0 40px ${belt.color}`;
+
+        document.getElementById('resultCard').style.setProperty('--final-belt-color', belt.color);
+        document.getElementById('resultBeltName').textContent = belt.name;
+        document.getElementById('resultBeltName').style.color = belt.color;
+        document.getElementById('resultBeltName').style.textShadow = `0 0 30px ${belt.color}`;
+        document.getElementById('resultScore').textContent = score;
+        document.getElementById('resultScoreLabel').textContent = `puntos de ${maxScore}`;
+        document.getElementById('resultMessage').textContent = RESULT_MESSAGES[beltIdx];
+
+        const starsRow = document.getElementById('starsRow');
+        starsRow.innerHTML = '';
+        for (let i = 0; i < BELTS.length; i++) {
+            const star = document.createElement('span');
+            star.className = 'star' + (i <= beltIdx ? ' lit' : '');
+            star.style.animationDelay = (i * 0.12) + 's';
+            star.style.color = i <= beltIdx ? belt.color : '#333';
+            star.textContent = '★';
+            starsRow.appendChild(star);
+        }
+
+        const cta = CTA_BY_BELT[beltIdx];
+        document.getElementById('ctaText').textContent = cta.text;
+        const waBtn = document.getElementById('ctaWhatsapp');
+        waBtn.textContent = cta.label;
+        waBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola!%20Hice%20la%20trivia%20del%20dojo%20y%20saqué%20${encodeURIComponent(belt.name)}%20con%20${score}%20puntos.%20Me%20gustaría%20saber%20más%20sobre%20las%20clases!`;
+        document.getElementById('kanjiBg').textContent = belt.kanji;
+        }
+
+        function retryGame() {
+        showScreen('screenIntro');
+        document.getElementById('kanjiBg').textContent = '道';
+        }
+
+        function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+    </script>
+</body>
+</html>
