@@ -1563,3 +1563,89 @@ footer h3 {
     justify-content: center;
   }
 }
+
+.user-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.user-name {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-page .contact-section {
+  min-height: 60vh;
+}
+
+.auth-card {
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.auth-note {
+  text-align: center;
+  margin: 0 0 1rem;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.auth-card .auth-actions button {
+  width: auto;
+  padding: 12px 25px;
+}
+
+.auth-error {
+  color: #d64545;
+  margin: 0 0 12px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.auth-switch {
+  text-align: center;
+  margin: 1rem 0 0;
+}
+
+.auth-card .link-button {
+  width: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.auth-card button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.trivia-best {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--trivia-gold);
+  text-align: center;
+  margin: -12px 0 24px;
+}
+
+.trivia-best a {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .user-name {
+    display: none;
+  }
+}

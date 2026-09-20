@@ -10,6 +10,8 @@ import {
   resultMessages,
   socialLinks,
 } from './data.js';
+import { isFirebaseConfigured } from './firebase.js';
+import { authErrorMessage, loadUserData, loginUser, logoutUser, registerUser, saveUserData, watchAuth } from './cloud.js';
 
 const WHATSAPP_NUMBER = '5491157462523';
 const THEME_STORAGE_KEY = 'ikigai-theme';
@@ -18,19 +20,29 @@ const setPageHash = (page) => { window.location.hash = `/${page}`; };
 const parsePrice = (priceStr) => Number(String(priceStr).replace(/[^\d]/g, '')) || 0;
 const formatPrice = (value) => `$${value.toLocaleString('es-AR')}`;
 const CART_STORAGE_KEY = 'ikigai-cart';
+const hydrateCart = (stored) => {
+  if (!Array.isArray(stored)) return [];
+  return stored.flatMap((entry) => {
+    const product = products.find((item) => item.id === entry?.id);
+    const quantity = Math.floor(Number(entry?.qty));
+    if (!product || !(quantity >= 1)) return [];
+    return [{ id: product.id, name: product.name, price: parsePrice(product.price), image: product.image, qty: quantity }];
+  });
+};
 const getInitialCart = () => {
   try {
-    const stored = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-    if (!Array.isArray(stored)) return [];
-    return stored.flatMap(({ id, qty }) => {
-      const product = products.find((item) => item.id === id);
-      const quantity = Math.floor(Number(qty));
-      if (!product || !(quantity >= 1)) return [];
-      return [{ id: product.id, name: product.name, price: parsePrice(product.price), image: product.image, qty: quantity }];
-    });
+    return hydrateCart(JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]'));
   } catch {
     return [];
   }
+};
+const mergeCarts = (remote, local) => {
+  const merged = new Map(remote.map((item) => [item.id, item]));
+  local.forEach((item) => {
+    const existing = merged.get(item.id);
+    merged.set(item.id, existing ? { ...existing, qty: Math.max(existing.qty, item.qty) } : item);
+  });
+  return [...merged.values()];
 };
 const getInitialTheme = () => {
   try {
@@ -42,7 +54,7 @@ const getInitialTheme = () => {
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 };
 
-const Header = ({ currentPage, cartCount, theme, onToggleTheme }) => {
+const Header = ({ currentPage, cartCount, theme, onToggleTheme, user }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const handleNavClick = (page) => {
     setMenuOpen(false);
@@ -72,6 +84,12 @@ const Header = ({ currentPage, cartCount, theme, onToggleTheme }) => {
           <button className="theme-toggle" type="button" onClick={onToggleTheme} aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}>
             <i className={theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'} aria-hidden="true" />
           </button>
+          {isFirebaseConfigured && (
+            <button className="nav-link user-link" type="button" onClick={() => handleNavClick('ingresar')} aria-label={user ? 'Mi cuenta' : 'Ingresar'}>
+              <i className="fas fa-user" aria-hidden="true" />
+              <span className="user-name">{user ? (user.name.split(' ')[0] || 'Mi cuenta') : 'Ingresar'}</span>
+            </button>
+          )}
           <button className="nav-link cta-button cta-desktop" type="button" onClick={() => handleNavClick('contacto')}>Inscríbete Ahora</button>
           <button className="menu-toggle" type="button" onClick={() => setMenuOpen((open) => !open)} aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={menuOpen} aria-controls="navbar">
             <i className={menuOpen ? 'fas fa-xmark' : 'fas fa-bars'} aria-hidden="true" />
@@ -279,12 +297,13 @@ const Store = ({ onAddToCart }) => (
   </main>
 );
 
-const Cart = ({ cart, onUpdateQty, onRemove, onClear }) => {
+const Cart = ({ cart, userName, onUpdateQty, onRemove, onClear }) => {
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const handleCheckout = () => {
     const lines = cart.map((item) => `- ${item.qty}x ${item.name} (${formatPrice(item.price)} c/u) = ${formatPrice(item.price * item.qty)}`).join('\n');
-    const message = `Hola, quería averiguar por estos productos:\n${lines}\n\nTotal: ${formatPrice(total)}`;
+    const intro = userName ? `Hola, soy ${userName}. Quería averiguar por estos productos:` : 'Hola, quería averiguar por estos productos:';
+    const message = `${intro}\n${lines}\n\nTotal: ${formatPrice(total)}`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
 
@@ -337,7 +356,7 @@ const getBelt = (points) => belts.reduce((current, belt) => (points >= belt.min 
 const getBeltIndex = (points) => belts.reduce((current, belt, index) => (points >= belt.min ? index : current), 0);
 const shuffleQuestions = (mode) => [...questions[mode]].sort(() => Math.random() - 0.5).slice(0, 10);
 
-const Trivia = () => {
+const Trivia = ({ user, best, onFinish }) => {
   const [mode, setMode] = useState('easy');
   const [screen, setScreen] = useState('intro');
   const [gameQuestions, setGameQuestions] = useState([]);
@@ -368,6 +387,7 @@ const Trivia = () => {
   };
   const nextQuestion = () => {
     if (currentQ >= gameQuestions.length - 1) {
+      onFinish(score, belt.name);
       setScreen('result');
       return;
     }
@@ -399,6 +419,8 @@ const Trivia = () => {
               <div className="intro-kanji">空手</div>
               <div className="intro-subtitle">Poné a prueba tu conocimiento</div>
               <p className="intro-desc">Respondé correctamente y ascendé en el sistema de cinturones. ¿Llegarás al cinturón negro?</p>
+              {user && best && <p className="trivia-best">Tu mejor resultado: {best.belt} ({best.score} pts)</p>}
+              {!user && isFirebaseConfigured && <p className="trivia-best">Ingresá para guardar tu puntaje. <a href="#/ingresar">Iniciar sesión</a></p>}
               <div className="belt-preview">{belts.map((item) => <div className="belt-chip" key={item.name} style={{ background: item.color }} />)}</div>
               <div className="mode-select">
                 <button className={mode === 'easy' ? 'mode-btn selected' : 'mode-btn'} type="button" onClick={() => setMode('easy')}><span className="mode-icon">K</span>PRINCIPIANTE<span className="mode-label">Filosofía e historia básica</span></button>
@@ -451,24 +473,87 @@ const Trivia = () => {
   );
 };
 
-const Page = ({ currentPage, cart, onAddToCart, onUpdateQty, onRemove, onClear }) => {
-  const pages = useMemo(() => ({
-    inicio: <Home />,
-    galeria: <Gallery />,
-    nosotros: <Philosophy image={assets.alumnadoImage} />,
-    contacto: <Contact />,
-    eventos: <Events />,
-    tienda: <Store onAddToCart={onAddToCart} />,
-    carrito: <Cart cart={cart} onUpdateQty={onUpdateQty} onRemove={onRemove} onClear={onClear} />,
-    trivia: <Trivia />,
-  }), [cart, onAddToCart, onUpdateQty, onRemove, onClear]);
-  return pages[currentPage] || pages.inicio;
+const Auth = ({ user, onLogin, onRegister, onLogout }) => {
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const isRegister = mode === 'register';
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setError('');
+  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      if (isRegister) await onRegister(form.name.trim(), form.email.trim(), form.password);
+      else await onLogin(form.email.trim(), form.password);
+      setPageHash('inicio');
+    } catch (err) {
+      setError(authErrorMessage(err));
+      setBusy(false);
+    }
+  };
+
+  let content;
+  if (!isFirebaseConfigured) {
+    content = <p className="auth-note">El inicio de sesión todavía no está configurado en este sitio.</p>;
+  } else if (user) {
+    content = (
+      <>
+        <h2>Mi cuenta</h2>
+        <p className="auth-note">Sesión iniciada como <strong>{user.name || user.email}</strong>{user.name ? ` (${user.email})` : ''}.</p>
+        <div className="auth-actions">
+          <a className="btn btn-primary" href="#/tienda">Ir a la tienda</a>
+          <button className="btn btn-secondary" type="button" onClick={onLogout}>Cerrar sesión</button>
+        </div>
+      </>
+    );
+  } else {
+    content = (
+      <>
+        <h2>{isRegister ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
+        <form onSubmit={handleSubmit}>
+          {isRegister && <input type="text" name="name" placeholder="Tu nombre" autoComplete="name" value={form.name} onChange={handleChange} required />}
+          <input type="email" name="email" placeholder="Correo electrónico" autoComplete="email" value={form.email} onChange={handleChange} required />
+          <input type="password" name="password" placeholder="Contraseña (mínimo 6 caracteres)" autoComplete={isRegister ? 'new-password' : 'current-password'} minLength={6} value={form.password} onChange={handleChange} required />
+          {error && <p className="auth-error" role="alert">{error}</p>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Un momento...' : (isRegister ? 'Registrarme' : 'Ingresar')}</button>
+        </form>
+        <p className="auth-switch">
+          {isRegister ? '¿Ya tenés cuenta?' : '¿Todavía no tenés cuenta?'}{' '}
+          <button type="button" className="link-button" onClick={() => switchMode(isRegister ? 'login' : 'register')}>{isRegister ? 'Iniciar sesión' : 'Registrate'}</button>
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <main className="auth-page">
+      <section className="contact-section">
+        <div className="container">
+          <div className="auth-card contact-form">{content}</div>
+        </div>
+      </section>
+    </main>
+  );
 };
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState(getPageFromHash());
   const [cart, setCart] = useState(getInitialCart);
   const [theme, setTheme] = useState(getInitialTheme);
+  const [user, setUser] = useState(null);
+  const [cloudReady, setCloudReady] = useState(false);
+  const [bestTrivia, setBestTrivia] = useState(null);
+
   useEffect(() => {
     const handleHashChange = () => { setCurrentPage(getPageFromHash()); };
     window.addEventListener('hashchange', handleHashChange);
@@ -489,8 +574,28 @@ const App = () => {
       /* localStorage no disponible */
     }
   }, [cart]);
-  const toggleTheme = () => setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
+  useEffect(() => watchAuth(setUser), []);
+  useEffect(() => {
+    if (!user) {
+      setCloudReady(false);
+      setBestTrivia(null);
+      return undefined;
+    }
+    let cancelled = false;
+    loadUserData(user.uid).then((data) => {
+      if (cancelled) return;
+      setCart((local) => mergeCarts(hydrateCart(data.cart), local));
+      setBestTrivia(data.trivia || null);
+      setCloudReady(true);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [user?.uid]);
+  useEffect(() => {
+    if (!user || !cloudReady) return;
+    saveUserData(user.uid, { cart: cart.map(({ id, qty }) => ({ id, qty })) }).catch(() => {});
+  }, [cart, cloudReady, user?.uid]);
 
+  const toggleTheme = () => setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
   const addToCart = (product, quantity = 1) => {
     setCart((current) => {
       const existing = current.find((item) => item.id === product.id);
@@ -511,14 +616,45 @@ const App = () => {
   const clearCart = () => setCart([]);
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
+  const handleLogin = async (email, password) => { setUser(await loginUser(email, password)); };
+  const handleRegister = async (name, email, password) => { setUser(await registerUser(name, email, password)); };
+  const handleLogout = async () => {
+    setCloudReady(false);
+    try {
+      await logoutUser();
+      setCart([]);
+      setPageHash('inicio');
+    } catch {
+      setCloudReady(true);
+    }
+  };
+  const handleTriviaFinish = (score, beltName) => {
+    if (!user || !cloudReady) return;
+    if (bestTrivia && bestTrivia.score >= score) return;
+    const record = { score, belt: beltName };
+    setBestTrivia(record);
+    saveUserData(user.uid, { trivia: record }).catch(() => {});
+  };
+
+  const pages = {
+    inicio: <Home />,
+    galeria: <Gallery />,
+    nosotros: <Philosophy image={assets.alumnadoImage} />,
+    contacto: <Contact />,
+    eventos: <Events />,
+    tienda: <Store onAddToCart={addToCart} />,
+    carrito: <Cart cart={cart} userName={user?.name} onUpdateQty={updateQty} onRemove={removeFromCart} onClear={clearCart} />,
+    trivia: <Trivia user={user} best={bestTrivia} onFinish={handleTriviaFinish} />,
+    ingresar: <Auth user={user} onLogin={handleLogin} onRegister={handleRegister} onLogout={handleLogout} />,
+  };
+
   return (
     <div className="app-shell">
-      <Header currentPage={currentPage} cartCount={cartCount} theme={theme} onToggleTheme={toggleTheme} />
-      <Page currentPage={currentPage} cart={cart} onAddToCart={addToCart} onUpdateQty={updateQty} onRemove={removeFromCart} onClear={clearCart} />
+      <Header currentPage={currentPage} cartCount={cartCount} theme={theme} onToggleTheme={toggleTheme} user={user} />
+      {pages[currentPage] || pages.inicio}
       <Footer />
     </div>
   );
 };
 
 export default App;
-
